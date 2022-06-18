@@ -19,6 +19,7 @@ use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::pre_process;
 use crate::info::info::ScanInfo;
 
+#[derive(Clone)]
 pub struct YasScannerConfig {
     max_row: u32,
     capture_only: bool,

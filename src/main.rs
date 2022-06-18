@@ -166,6 +166,7 @@ fn main() {
         // .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式。mona：莫纳占卜铺（默认）；mingyulab：原魔计算器。").possible_values(&["mona", "mingyulab"]).default_value("mona"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
+    let config0 = config.clone();
 
     set_dpi_awareness();
 
@@ -173,7 +174,7 @@ fn main() {
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
     let lock_filename = output_dir.join("lock.json");
-    if config.lock_mode {
+    if config0.lock_mode {
         indices = match read_lock_file(lock_filename) {
             Ok(v) => v,
             _ => {
@@ -235,7 +236,8 @@ fn main() {
 
     let mut scanner = YasScanner::new(info.clone(), config);
 
-    if config.lock_mode {
+    // create a clone to avoid ownership issue
+    if config0.lock_mode {
         scanner.flip_lock(indices);
     } else {
         let now = SystemTime::now();
