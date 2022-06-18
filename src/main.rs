@@ -158,31 +158,28 @@ fn main() {
                 .takes_value(true)
                 .help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"),
         )
+        .arg(
+            Arg::with_name("lock")
+                .long("lock")
+                .help("根据lock.json进行加/解锁"),
+        )
         // .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式。mona：莫纳占卜铺（默认）；mingyulab：原魔计算器。").possible_values(&["mona", "mingyulab"]).default_value("mona"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
     set_dpi_awareness();
 
-    let mut lock_mode = false;
     let mut indices: Vec<u32> = Vec::new();
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
     let lock_filename = output_dir.join("lock.json");
-    if lock_filename.exists() {
-        print!("检测到lock文件，输入y开始加解锁，直接回车开始扫描：");
-        stdout().flush().unwrap();
-        let mut s: String = String::new();
-        stdin().read_line(&mut s).expect("Readline error");
-        if s.trim() == "y" {
-            indices = match read_lock_file(lock_filename) {
-                Ok(v) => v,
-                _ => {
-                    utils::error_and_quit("无法读取lock文件");
-                }
-            };
-            lock_mode = true;
-        }
+    if config.lock_mode {
+        indices = match read_lock_file(lock_filename) {
+            Ok(v) => v,
+            _ => {
+                utils::error_and_quit("无法读取lock文件");
+            }
+        };
     }
 
     let hwnd = match utils::find_window(String::from("原神")) {
@@ -238,7 +235,7 @@ fn main() {
 
     let mut scanner = YasScanner::new(info.clone(), config);
 
-    if lock_mode {
+    if config.lock_mode {
         scanner.flip_lock(indices);
     } else {
         let now = SystemTime::now();

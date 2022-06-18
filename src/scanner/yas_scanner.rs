@@ -28,6 +28,7 @@ pub struct YasScannerConfig {
     number: u32,
     verbose: bool,
     dump_mode: bool,
+    pub lock_mode: bool,
     // offset_x: i32,
     // offset_y: i32,
 }
@@ -42,6 +43,7 @@ impl YasScannerConfig {
                 .unwrap(),
             capture_only: matches.is_present("capture-only"),
             dump_mode: matches.is_present("dump"),
+            lock_mode: matches.is_present("lock"),
             min_star: matches
                 .value_of("min-star")
                 .unwrap_or("4")
