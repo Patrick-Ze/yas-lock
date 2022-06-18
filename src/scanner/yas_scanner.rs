@@ -618,7 +618,9 @@ impl YasScanner {
                     if hash.contains(&a) {
                         dup_count += 1;
                         consecutive_dup_count += 1;
-                        warn!("dup artifact detected: {:?}", result);
+                        // warn!("dup artifact detected: {:?}", result);
+                        error!("检测到重复圣遗物: {:?}", result);
+                        return ScrollResult::Interrupt;
                     } else {
                         consecutive_dup_count = 0;
                         hash.insert(a.clone());
@@ -627,6 +629,7 @@ impl YasScanner {
                     results.push(a);
                 } else {
                     error!("wrong detection: {:?}", result);
+                    return ScrollResult::Interrupt;
                     error_count += 1;
                     // println!("error parsing results");
                 }
@@ -634,6 +637,7 @@ impl YasScanner {
                     error!("检测到连续多个重复圣遗物，可能为翻页错误，或者为非背包顶部开始扫描");
                     break;
                 }
+                utils::sleep(200);
             }
 
             info!("error count: {}", error_count);
@@ -755,20 +759,20 @@ impl YasScanner {
             }
             // 右键终止
             if utils::is_rmb_down() {
-                break;
+                return ScrollResult::Interrupt;
             }
             // info!("{} {} {}", index, row, col);
 
             self.move_to(row - scanned_row + start_row, col);
             self.enigo.mouse_click(MouseButton::Left);
-            // self.wait_until_switched();
-            utils::sleep(100);
+            self.wait_until_switched();
+            utils::sleep(200);
 
             let left: i32 = self.info.left + self.info.lock_x as i32;
             let top: i32 = self.info.top + self.info.lock_y as i32;
             self.enigo.mouse_move_to(left, top);
             self.enigo.mouse_click(MouseButton::Left);
-            utils::sleep(100);
+            utils::sleep(200);
             self.move_to(row - scanned_row + start_row, col);
         }
     }
