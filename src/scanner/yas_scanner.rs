@@ -51,12 +51,12 @@ impl YasScannerConfig {
                 .unwrap(),
             max_wait_switch_artifact: matches
                 .value_of("max-wait-switch-artifact")
-                .unwrap_or("800")
+                .unwrap_or("1000")
                 .parse::<u32>()
                 .unwrap(),
             scroll_stop: matches
                 .value_of("scroll-stop")
-                .unwrap_or("80")
+                .unwrap_or("100")
                 .parse::<u32>()
                 .unwrap(),
             number: matches
@@ -170,7 +170,7 @@ fn calc_pool(row: &Vec<u8>) -> f64 {
     for i in 0..len {
         pool += row[i * 4] as f64;
     }
-    // pool /= len as f64;
+    pool /= len as f64;
     pool
 }
 
@@ -405,16 +405,16 @@ impl YasScanner {
             (self.info.lock_x as i32 + self.info.left) as u32,
             (self.info.lock_y as i32 + self.info.top) as u32,
         );
-        // info!("Lock color: {} {} {}", color.0, color.1, color.2);
 
         let color_t = Color::from(73, 83, 102);
-        let color_f = Color::from(241, 237, 232);
+        let color_f = Color::from(243, 239, 234);
 
-        if color_t.dis_2(&color) <= 3 {
+        if color_t.dis_2(&color) == 0 {
             return true;
-        } else if color_f.dis_2(&color) <= 3 {
+        } else if color_f.dis_2(&color) == 0 {
             return false;
         } else {
+            warn!("Lock color not match: {} {} {}", color.0, color.1, color.2);
             return !lock_last; // switch animation
         }
     }
@@ -621,7 +621,8 @@ impl YasScanner {
                     if hash.contains(&a) {
                         dup_count += 1;
                         consecutive_dup_count += 1;
-                        warn!("dup artifact detected: {:?}", result);
+                        error!("dup artifact detected: {:?}", result);
+                        break;
                     } else {
                         consecutive_dup_count = 0;
                         hash.insert(a.clone());
@@ -631,7 +632,7 @@ impl YasScanner {
                 } else {
                     error!("wrong detection: {:?}", result);
                     error_count += 1;
-                    // println!("error parsing results");
+                    break;
                 }
                 if consecutive_dup_count >= info.art_row {
                     error!("检测到连续多个重复圣遗物，可能为翻页错误，或者为非背包顶部开始扫描");
@@ -676,8 +677,7 @@ impl YasScanner {
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
-                    // self.wait_until_switched();
-                    utils::sleep(80);
+                    self.wait_until_switched();
 
                     let capture = self.capture_panel().unwrap();
                     let star = self.get_star();
@@ -712,7 +712,7 @@ impl YasScanner {
                 _ => (),
             }
 
-            utils::sleep(100);
+            utils::sleep(200);
         }
 
         tx.send(None).unwrap();
@@ -731,7 +731,7 @@ impl YasScanner {
             Err(_) => 1000,
         };
         if indices[indices.len() - 1] > count {
-            error!("指标超出范围");
+            error!("最大圣遗物编号超出背包实际圣遗物个数");
             return;
         }
         self.sample_initial_color();
@@ -740,7 +740,7 @@ impl YasScanner {
         let mut scanned_row = 0_u32;
         let mut start_row = 0_u32;
 
-        for index in indices {
+        'outer: for index in indices {
             let row: u32 = index / self.col;
             let col: u32 = index % self.col;
             while row >= scanned_row + self.row {
@@ -751,28 +751,28 @@ impl YasScanner {
                 match self.scroll_rows(scroll_row) {
                     ScrollResult::TLE => {
                         error!("翻页出现问题");
-                        break;
+                        break 'outer;
                     }
                     ScrollResult::Interrupt => break,
                     _ => (),
                 }
+                // 右键终止
+                if utils::is_rmb_down() {
+                    break 'outer;
+                }
             }
-            // 右键终止
-            if utils::is_rmb_down() {
-                break;
-            }
-            // info!("{} {} {}", index, row, col);
+            info!("index {} in {}{}", index, row, col);
 
             self.move_to(row - scanned_row + start_row, col);
             self.enigo.mouse_click(MouseButton::Left);
             // self.wait_until_switched();
-            utils::sleep(100);
+            utils::sleep(250);
 
             let left: i32 = self.info.left + self.info.lock_x as i32;
             let top: i32 = self.info.top + self.info.lock_y as i32;
             self.enigo.mouse_move_to(left, top);
             self.enigo.mouse_click(MouseButton::Left);
-            utils::sleep(100);
+            utils::sleep(250);
             self.move_to(row - scanned_row + start_row, col);
         }
     }

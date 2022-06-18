@@ -117,7 +117,7 @@ fn main() {
                 .long("max-wait-switch-artifact")
                 .takes_value(true)
                 .min_values(10)
-                .help("切换圣遗物最大等待时间(ms)"),
+                .help("切换圣遗物时的最大等待时间(ms): 1000"),
         )
         .arg(
             Arg::with_name("output-dir")
@@ -131,7 +131,7 @@ fn main() {
             Arg::with_name("scroll-stop")
                 .long("scroll-stop")
                 .takes_value(true)
-                .help("翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）"),
+                .help("翻页时滚轮停顿时间(ms): 100"),
         )
         .arg(
             Arg::with_name("number")
@@ -192,7 +192,7 @@ fn main() {
     unsafe {
         ShowWindow(hwnd, SW_RESTORE);
     }
-    // utils::sleep(1000);
+    utils::sleep(1000);
     unsafe {
         SetForegroundWindow(hwnd);
     }
@@ -201,10 +201,10 @@ fn main() {
     let rect = utils::get_client_rect(hwnd).unwrap();
 
     // rect.scale(1.25);
-    // info!("detected left: {}", rect.left);
-    // info!("detected top: {}", rect.top);
-    // info!("detected width: {}", rect.width);
-    // info!("detected height: {}", rect.height);
+    info!("detected left: {}", rect.left);
+    info!("detected top: {}", rect.top);
+    info!("detected width: {}", rect.width);
+    info!("detected height: {}", rect.height);
 
     // capture_absolute_image(&rect).unwrap().save("test.png");
 
