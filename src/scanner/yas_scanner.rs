@@ -48,7 +48,7 @@ impl YasScannerConfig {
             lock_mode: matches.is_present("lock"),
             min_star: matches
                 .value_of("min-star")
-                .unwrap_or("4")
+                .unwrap_or("5")
                 .parse::<u32>()
                 .unwrap(),
             min_level: matches
