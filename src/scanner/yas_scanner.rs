@@ -429,14 +429,14 @@ impl YasScanner {
         );
 
         let color_t = Color::from(73, 83, 102);
-        let color_f = Color::from(243, 239, 234);
+        let color_f = Color::from(242, 238, 233);
 
-        if color_t.dis_2(&color) == 0 {
+        if color_t.dis_2(&color) <= 3 {
             return true;
-        } else if color_f.dis_2(&color) == 0 {
+        } else if color_f.dis_2(&color) <= 3 {
             return false;
         } else {
-            warn!("Lock color not match: {} {} {}", color.0, color.1, color.2);
+            warn!("Lock color not match: ({}, {}, {}) -> ", color.0, color.1, color.2);
             return !lock_last; // switch animation
         }
     }
