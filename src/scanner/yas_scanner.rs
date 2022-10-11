@@ -45,7 +45,7 @@ impl YasScannerConfig {
                 .unwrap(),
             capture_only: matches.is_present("capture-only"),
             dump_mode: matches.is_present("dump"),
-            lock_mode: matches.is_present("lock"),
+            lock_mode: true,
             min_star: matches
                 .value_of("min-star")
                 .unwrap_or("5")
@@ -791,7 +791,7 @@ impl YasScanner {
                     break 'outer;
                 }
             }
-            info!("index {} in {}{}", index, row, col);
+            // info!("index {} in {}{}", index, row, col);
 
             self.move_to(row - scanned_row + start_row, col);
             self.enigo.mouse_click(MouseButton::Left);
